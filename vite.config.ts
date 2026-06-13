@@ -5,7 +5,7 @@ import { traeBadgePlugin } from 'vite-plugin-trae-solo-badge';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './', // 适配 GitHub Pages 相对路径部署
+  base: '/fclone/', // 适配 GitHub Pages 项目路径
   build: {
     sourcemap: 'hidden',
   },
