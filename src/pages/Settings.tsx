@@ -6,10 +6,13 @@ import { supabase } from '../lib/supabase';
 const Settings: React.FC = () => {
   const aiConfig = useStore(state => state.aiConfig);
   const updateAIConfig = useStore(state => state.updateAIConfig);
+  const isLoadingConfig = useStore(state => state.isLoadingConfig);
   
   const [formData, setFormData] = useState(aiConfig);
+  const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
+  // 当从云端拉取到最新配置时，更新本地表单状态
   useEffect(() => {
     setFormData(aiConfig);
   }, [aiConfig]);
@@ -20,11 +23,24 @@ const Settings: React.FC = () => {
     setIsSaved(false);
   };
 
-  const handleSave = () => {
-    updateAIConfig(formData);
+  const handleSave = async () => {
+    setIsSaving(true);
+    await updateAIConfig(formData);
+    setIsSaving(false);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
+
+  if (isLoadingConfig) {
+    return (
+      <div className="max-w-2xl mx-auto p-4 flex justify-center items-center h-64">
+        <div className="text-gray-500 flex items-center gap-2">
+          <Cpu className="w-5 h-5 animate-pulse" />
+          正在从云端同步配置...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-y-auto bg-surface-subtle">
@@ -88,17 +104,21 @@ const Settings: React.FC = () => {
               />
             </div>
 
-            <div className="pt-4 border-t border-gray-100 flex justify-end">
+            <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                您的 API Key 将被加密安全地存储在云端数据库中。
+              </div>
               <button
                 onClick={handleSave}
-                className="flex items-center px-6 py-2.5 bg-brand-500 text-white font-medium rounded-lg hover:bg-brand-600 transition-colors shadow-sm"
+                disabled={isSaving}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all ${
+                  isSaved
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-green-600 text-white hover:bg-green-700 active:scale-95 shadow-sm disabled:opacity-50'
+                }`}
               >
-                {isSaved ? '已保存 ✓' : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    保存配置
-                  </>
-                )}
+                <Save className="w-4 h-4" />
+                {isSaving ? '正在保存...' : isSaved ? '已保存到云端' : '保存设置'}
               </button>
             </div>
           </div>

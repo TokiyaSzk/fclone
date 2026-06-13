@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { Memo, AIConfig } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -7,55 +6,70 @@ interface AppState {
   memos: Memo[];
   aiConfig: AIConfig;
   isLoadingMemos: boolean;
+  isLoadingConfig: boolean;
   addMemo: (content: string, tags: string[]) => Promise<void>;
   updateMemo: (id: string, content: string, tags: string[]) => Promise<void>;
   deleteMemo: (id: string) => Promise<void>;
-  updateAIConfig: (config: Partial<AIConfig>) => void;
+  updateAIConfig: (config: Partial<AIConfig>) => Promise<void>;
   getAllTags: () => string[];
-  fetchMemos: () => Promise<void>;
+  fetchData: () => Promise<void>;
 }
 
 export const useStore = create<AppState>()(
-  persist(
-    (set, get) => ({
-      memos: [],
-      isLoadingMemos: false,
-      aiConfig: {
-        baseUrl: 'https://api.openai.com/v1',
-        apiKey: '',
-        model: 'gpt-3.5-turbo',
-      },
-      fetchMemos: async () => {
-        set({ isLoadingMemos: true });
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) return;
-          
-          const { data, error } = await supabase
+  (set, get) => ({
+    memos: [],
+    isLoadingMemos: false,
+    isLoadingConfig: false,
+    aiConfig: {
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: '',
+      model: 'gpt-3.5-turbo',
+    },
+    fetchData: async () => {
+      set({ isLoadingMemos: true, isLoadingConfig: true });
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        
+        // 并行拉取 memos 和 config
+        const [memosRes, configRes] = await Promise.all([
+          supabase
             .from('memos')
             .select('*')
             .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false });
-            
-          if (error) throw error;
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('user_settings')
+            .select('ai_config')
+            .eq('user_id', session.user.id)
+            .single()
+        ]);
           
-          if (data) {
-            set({
-              memos: data.map((item: any) => ({
-                id: item.id,
-                content: item.content,
-                tags: item.tags || [],
-                createdAt: new Date(item.created_at).getTime(),
-                updatedAt: new Date(item.updated_at).getTime(),
-              })),
-            });
-          }
-        } catch (error) {
-          console.error('Error fetching memos:', error);
-        } finally {
-          set({ isLoadingMemos: false });
+        if (memosRes.error) throw memosRes.error;
+        
+        // 更新 Memos
+        if (memosRes.data) {
+          set({
+            memos: memosRes.data.map((item: any) => ({
+              id: item.id,
+              content: item.content,
+              tags: item.tags || [],
+              createdAt: new Date(item.created_at).getTime(),
+              updatedAt: new Date(item.updated_at).getTime(),
+            })),
+          });
         }
-      },
+
+        // 更新 AI Config
+        if (configRes.data && configRes.data.ai_config) {
+          set({ aiConfig: configRes.data.ai_config });
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        set({ isLoadingMemos: false, isLoadingConfig: false });
+      }
+    },
       addMemo: async (content, tags) => {
         const id = crypto.randomUUID();
         const now = Date.now();
@@ -123,9 +137,28 @@ export const useStore = create<AppState>()(
           set({ memos: previousMemos });
         }
       },
-      updateAIConfig: (config) => set((state) => ({
-        aiConfig: { ...state.aiConfig, ...config },
-      })),
+      updateAIConfig: async (config) => {
+        const newConfig = { ...get().aiConfig, ...config };
+        // 乐观更新 UI
+        set({ aiConfig: newConfig });
+        
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) return;
+          
+          const { error } = await supabase
+            .from('user_settings')
+            .upsert({
+              user_id: session.user.id,
+              ai_config: newConfig,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+            
+          if (error) throw error;
+        } catch (error) {
+          console.error('Error updating AI config:', error);
+        }
+      },
       getAllTags: () => {
         const tagsSet = new Set<string>();
         get().memos.forEach((memo) => {
@@ -133,11 +166,5 @@ export const useStore = create<AppState>()(
         });
         return Array.from(tagsSet).sort();
       },
-    }),
-    {
-      name: 'flomo-clone-storage',
-      // 只持久化 aiConfig，memos 由 supabase 管理
-      partialize: (state) => ({ aiConfig: state.aiConfig }),
-    }
-  )
+    })
 );

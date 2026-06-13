@@ -18,7 +18,7 @@ function App() {
       setSession(session);
       setLoading(false);
       if (session) {
-        useStore.getState().fetchMemos();
+        useStore.getState().fetchData();
       }
     });
 
@@ -28,7 +28,7 @@ function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
-        useStore.getState().fetchMemos();
+        useStore.getState().fetchData();
       }
     });
 
