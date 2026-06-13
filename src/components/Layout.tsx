@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { BookOpen, Shuffle, Settings, Menu, X } from 'lucide-react';
+import { BookOpen, Shuffle, Settings, Menu, X, Search as SearchIcon, Map as MapIcon } from 'lucide-react';
 import clsx from 'clsx';
 import { useStore } from '../store/useStore';
 
 const Layout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const memos = useStore(state => state.memos);
-  
+
   const tags = useMemo(() => {
     const tagsSet = new Set<string>();
     memos.forEach(memo => memo.tags.forEach(tag => tagsSet.add(tag)));
@@ -16,7 +16,9 @@ const Layout: React.FC = () => {
 
   const navItems = [
     { to: '/', icon: BookOpen, label: '全部笔记' },
+    { to: '/search', icon: SearchIcon, label: '搜索 / AI 问答' },
     { to: '/review', icon: Shuffle, label: '每日回顾' },
+    { to: '/map', icon: MapIcon, label: '认知地图' },
     { to: '/settings', icon: Settings, label: 'AI 设置' },
   ];
 

@@ -6,6 +6,8 @@ import Layout from './components/Layout';
 import Workbench from './pages/Workbench';
 import Review from './pages/Review';
 import Settings from './pages/Settings';
+import Search from './pages/Search';
+import MapPage from './pages/Map';
 import { useStore } from './store/useStore';
 
 function App() {
@@ -48,7 +50,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Workbench />} />
+          <Route path="search" element={<Search />} />
           <Route path="review" element={<Review />} />
+          <Route path="map" element={<MapPage />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

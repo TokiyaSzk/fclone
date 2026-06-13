@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { MoreHorizontal, Trash2, Copy, Edit2, Check, X } from 'lucide-react';
+import { MoreHorizontal, Trash2, Copy, Edit2, Check, X, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { Memo } from '../types';
 import { useStore } from '../store/useStore';
 import { extractTagsFromText } from '../utils/tags';
@@ -13,9 +13,18 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(memo.content);
   const [showMenu, setShowMenu] = useState(false);
-  
+
+  const memos = useStore(state => state.memos);
   const updateMemo = useStore(state => state.updateMemo);
   const deleteMemo = useStore(state => state.deleteMemo);
+
+  // 发现相关笔记：有共同标签的其他笔记（最多推荐 3 条）
+  const relatedMemos = useMemo(() => {
+    if (memo.tags.length === 0) return [];
+    return memos
+      .filter(m => m.id !== memo.id && m.tags.some(tag => memo.tags.includes(tag)))
+      .slice(0, 3);
+  }, [memos, memo.tags, memo.id]);
 
   const handleSave = () => {
     if (!editContent.trim()) return;
@@ -35,18 +44,46 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
     setShowMenu(false);
   };
 
+  const scrollToMemo = (id: string) => {
+    const el = document.getElementById(`memo-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('bg-brand-50');
+      setTimeout(() => el.classList.remove('bg-brand-50'), 2000);
+    }
+  };
+
   const renderContent = (text: string) => {
-    const parts = text.split(/(#[^\s#]+)/g);
+    // 匹配标签 #tag 和 引用 [[id]]
+    const parts = text.split(/(#[^\s#]+|\[\[[a-zA-Z0-9-]+\]\])/g);
     return parts.map((part, i) => {
       if (part.startsWith('#')) {
         return <span key={i} className="text-brand-500 font-medium cursor-pointer hover:underline">{part}</span>;
+      }
+      if (part.startsWith('[[') && part.endsWith(']]')) {
+        const id = part.slice(2, -2);
+        const linkedMemo = memos.find(m => m.id === id);
+        if (linkedMemo) {
+          const preview = linkedMemo.content.slice(0, 15).replace(/\n/g, ' ') + '...';
+          return (
+            <span 
+              key={i} 
+              onClick={() => scrollToMemo(id)}
+              className="inline-flex items-center text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded text-sm cursor-pointer hover:bg-brand-100 mx-1 transition-colors"
+            >
+              <LinkIcon className="w-3 h-3 mr-1" />
+              {preview}
+            </span>
+          );
+        }
+        return <span key={i} className="text-gray-400 line-through mx-1">[已删除引用]</span>;
       }
       return <span key={i}>{part}</span>;
     });
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-4 group hover:shadow-md transition-shadow">
+    <div id={`memo-${memo.id}`} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-4 group hover:shadow-md transition-all duration-500">
       {isEditing ? (
         <div className="space-y-3">
           <textarea
@@ -113,6 +150,27 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
               )}
             </div>
           </div>
+
+          {/* 发现相关笔记 */}
+          {relatedMemos.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-gray-50">
+              <div className="flex items-center text-xs text-brand-500 mb-2 font-medium">
+                <Sparkles className="w-3.5 h-3.5 mr-1" />
+                发现相关笔记
+              </div>
+              <div className="space-y-2">
+                {relatedMemos.map(rm => (
+                  <div 
+                    key={rm.id} 
+                    onClick={() => scrollToMemo(rm.id)}
+                    className="text-sm text-gray-500 hover:text-brand-600 cursor-pointer bg-gray-50 hover:bg-brand-50 p-2 rounded-lg transition-colors truncate"
+                  >
+                    {rm.content.replace(/\n/g, ' ')}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
