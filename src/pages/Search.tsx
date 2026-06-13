@@ -1,15 +1,23 @@
 import React, { useState, useMemo } from 'react';
-import { Search as SearchIcon, Sparkles, Loader2 } from 'lucide-react';
+import { Search as SearchIcon, Sparkles, Loader2, Save, Check } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import MemoCard from '../components/MemoCard';
 import { callAI } from '../utils/ai';
 
 const Search: React.FC = () => {
   const memos = useStore(state => state.memos);
+  const addMemo = useStore(state => state.addMemo);
   const aiConfig = useStore(state => state.aiConfig);
   const [query, setQuery] = useState('');
   const [isAISearching, setIsAISearching] = useState(false);
   const [aiAnswer, setAiAnswer] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSaveAnswer = () => {
+    if (!aiAnswer) return;
+    addMemo(`**搜索问题：${query}**\n\n${aiAnswer}\n\n#AI问答`, ['AI问答']);
+    setIsSaved(true);
+  };
 
   // 基础搜索过滤
   const filteredMemos = useMemo(() => {
@@ -25,6 +33,7 @@ const Search: React.FC = () => {
     if (!query.trim()) return;
     setIsAISearching(true);
     setAiAnswer(null);
+    setIsSaved(false);
     try {
       // 构建一个简单的 RAG (检索增强生成)
       // 我们把相关的或最近的笔记发给 AI
@@ -72,10 +81,20 @@ const Search: React.FC = () => {
 
         {aiAnswer && (
           <div className="bg-brand-50 border border-brand-100 rounded-xl p-5 mb-8">
-            <h3 className="font-bold text-brand-700 mb-2 flex items-center">
-              <Sparkles className="w-4 h-4 mr-1" /> AI 搜索结果
-            </h3>
-            <div className="text-brand-900 leading-relaxed whitespace-pre-wrap text-sm">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-bold text-brand-700 flex items-center">
+                <Sparkles className="w-4 h-4 mr-1" /> AI 搜索结果
+              </h3>
+              <button 
+                onClick={handleSaveAnswer}
+                disabled={isSaved}
+                className="flex items-center space-x-1 px-2.5 py-1.5 bg-white/60 hover:bg-white text-brand-600 rounded-md text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
+              >
+                {isSaved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
+                <span>{isSaved ? '已保存' : '保存为笔记'}</span>
+              </button>
+            </div>
+            <div className="text-brand-900 leading-relaxed whitespace-pre-wrap text-sm mt-3">
               {aiAnswer}
             </div>
           </div>
