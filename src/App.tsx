@@ -1,11 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { supabase } from './lib/supabase';
+import Auth from './components/Auth';
 import Layout from './components/Layout';
 import Workbench from './pages/Workbench';
 import Review from './pages/Review';
 import Settings from './pages/Settings';
+import { useStore } from './store/useStore';
 
 function App() {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // 获取当前 session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+      if (session) {
+        useStore.getState().fetchMemos();
+      }
+    });
+
+    // 监听 auth 状态变化
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        useStore.getState().fetchMemos();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!session) {
+    return <Auth onLogin={() => {}} />;
+  }
+
   return (
     <HashRouter>
       <Routes>

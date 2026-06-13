@@ -9,11 +9,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "check": "tsc -b --noEmit",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "check": "tsc -b --noEmit"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.108.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "lucide-react": "^0.511.0",

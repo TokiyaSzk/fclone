@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Save, Key, Globe, Cpu } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Key, Globe, Cpu, LogOut } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { supabase } from '../lib/supabase';
 
 const Settings: React.FC = () => {
   const aiConfig = useStore(state => state.aiConfig);
@@ -100,6 +101,25 @@ const Settings: React.FC = () => {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* 账户设置 */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+              <LogOut className="w-5 h-5 text-gray-500" />
+              账户设置
+            </h3>
+          </div>
+          <div className="p-6">
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+            >
+              退出登录
+            </button>
+            <p className="mt-2 text-sm text-gray-500">退出登录后需要重新输入账号密码才能访问您的笔记。</p>
           </div>
         </div>
       </div>
