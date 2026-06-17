@@ -81,10 +81,19 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
       return { memos: updated };
     });
 
+    // 先检查 session – 把可能抛异常的 getSession 放在 try-catch 外面
+    // 如果 Supabase 不可用，静默走本地模式，不触发回滚
+    let session;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      const result = await supabase.auth.getSession();
+      session = result.data.session;
+    } catch {
+      // Supabase 未配置/不可用 — 本地模式，笔记已保存在 localStorage
+      return;
+    }
+    if (!session) return;
 
+    try {
       const { error } = await supabase.from('memos').insert([{
         id, content, tags, pinned: false,
         user_id: session.user.id,
