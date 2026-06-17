@@ -3,13 +3,13 @@ import { Outlet, NavLink } from 'react-router-dom';
 import { BookOpen, Shuffle, Settings, Menu, X, Search as SearchIcon, Map as MapIcon, Hash, FileText } from 'lucide-react';
 import { isToday } from 'date-fns';
 import clsx from 'clsx';
-import { useStore } from '../store/useStore';
+import { useMemoStore, useUiStore } from '../store';
 
 const Layout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const memos = useStore(state => state.memos);
-  const activeTagFilter = useStore(state => state.activeTagFilter);
-  const setTagFilter = useStore(state => state.setTagFilter);
+  const memos = useMemoStore(state => state.memos);
+  const activeTagFilter = useUiStore(state => state.activeTagFilter);
+  const setTagFilter = useUiStore(state => state.setTagFilter);
 
   const tags = useMemo(() => {
     const tagsSet = new Set<string>();

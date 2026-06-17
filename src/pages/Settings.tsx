@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Settings as SettingsIcon, Save, Key, Globe, Cpu, LogOut, Sun, Moon, FileDown, FileUp } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useMemoStore } from '../store';
+import { useAiStore } from '../store';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '../hooks/useTheme';
 import { useToast } from '../components/Toast';
 
 const Settings: React.FC = () => {
   const { toast } = useToast();
-  const aiConfig = useStore(state => state.aiConfig);
-  const updateAIConfig = useStore(state => state.updateAIConfig);
-  const isLoadingConfig = useStore(state => state.isLoadingConfig);
-  const exportMemos = useStore(state => state.exportMemos);
-  const importMemos = useStore(state => state.importMemos);
+  const aiConfig = useAiStore(state => state.aiConfig);
+  const updateConfig = useAiStore(state => state.updateConfig);
+  const isLoading = useAiStore(state => state.isLoading);
+  const exportMemos = useMemoStore(state => state.exportMemos);
+  const importMemos = useMemoStore(state => state.importMemos);
   
   const { theme, toggleTheme } = useTheme();
   
@@ -34,7 +35,7 @@ const Settings: React.FC = () => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    await updateAIConfig(formData);
+    await updateConfig(formData);
     setIsSaving(false);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
@@ -71,7 +72,7 @@ const Settings: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  if (isLoadingConfig) {
+  if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto p-4 flex justify-center items-center h-64">
         <div className="text-gray-500 dark:text-gray-400 flex items-center gap-2">

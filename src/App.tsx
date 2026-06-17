@@ -8,8 +8,9 @@ import Review from './pages/Review';
 import Settings from './pages/Settings';
 import Search from './pages/Search';
 import MapPage from './pages/Map';
-import { useStore } from './store/useStore';
+import { useMemoStore, useAiStore } from './store';
 import { ToastProvider } from './components/Toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -21,7 +22,8 @@ function App() {
       setSession(session);
       setLoading(false);
       if (session) {
-        useStore.getState().fetchData();
+        useMemoStore.getState().fetchData();
+        useAiStore.getState().fetchConfig();
       }
     });
 
@@ -31,7 +33,8 @@ function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
-        useStore.getState().fetchData();
+        useMemoStore.getState().fetchData();
+        useAiStore.getState().fetchConfig();
       }
     });
 
@@ -48,18 +51,20 @@ function App() {
 
   return (
     <ToastProvider>
-      <HashRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Workbench />} />
-            <Route path="search" element={<Search />} />
-            <Route path="review" element={<Review />} />
-            <Route path="map" element={<MapPage />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </HashRouter>
+      <ErrorBoundary>
+        <HashRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Workbench />} />
+              <Route path="search" element={<Search />} />
+              <Route path="review" element={<Review />} />
+              <Route path="map" element={<MapPage />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </HashRouter>
+      </ErrorBoundary>
     </ToastProvider>
   );
 }

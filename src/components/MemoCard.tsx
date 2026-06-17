@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { MoreHorizontal, Trash2, Copy, Edit2, Check, X, Link as LinkIcon, Sparkles, Pin } from 'lucide-react';
 import { Memo } from '../types';
-import { useStore } from '../store/useStore';
+import { useMemoStore, useUiStore } from '../store';
 import { extractTagsFromText } from '../utils/tags';
 import { renderMarkdown } from '../utils/markdown';
 import clsx from 'clsx';
@@ -16,12 +16,12 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
   const [editContent, setEditContent] = useState(memo.content);
   const [showMenu, setShowMenu] = useState(false);
 
-  const memos = useStore(state => state.memos);
-  const updateMemo = useStore(state => state.updateMemo);
-  const deleteMemo = useStore(state => state.deleteMemo);
-  const togglePin = useStore(state => state.togglePin);
-  const selectedMemoIds = useStore(state => state.selectedMemoIds);
-  const toggleMemoSelect = useStore(state => state.toggleMemoSelect);
+  const memos = useMemoStore(state => state.memos);
+  const updateMemo = useMemoStore(state => state.updateMemo);
+  const deleteMemo = useMemoStore(state => state.deleteMemo);
+  const togglePin = useMemoStore(state => state.togglePin);
+  const selectedMemoIds = useUiStore(state => state.selectedMemoIds);
+  const toggleMemoSelect = useUiStore(state => state.toggleMemoSelect);
 
   const isSelected = selectedMemoIds.has(memo.id);
   const hasSelection = selectedMemoIds.size > 0;
@@ -236,4 +236,4 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
   );
 };
 
-export default MemoCard;
+export default React.memo(MemoCard);

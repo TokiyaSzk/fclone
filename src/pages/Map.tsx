@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Map as MapIcon } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useMemoStore } from '../store';
 import ForceGraph2D from 'react-force-graph-2d';
 
 const MapPage: React.FC = () => {
-  const memos = useStore(state => state.memos);
+  const memos = useMemoStore(state => state.memos);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
   useEffect(() => {

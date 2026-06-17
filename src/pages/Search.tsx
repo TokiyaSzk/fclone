@@ -1,15 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { Search as SearchIcon, Sparkles, Loader2, Save, Check } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useMemoStore } from '../store';
+import { useAiStore } from '../store';
 import MemoCard from '../components/MemoCard';
 import { callAI } from '../utils/ai';
 import { useToast } from '../components/Toast';
 
 const Search: React.FC = () => {
   const { toast } = useToast();
-  const memos = useStore(state => state.memos);
-  const addMemo = useStore(state => state.addMemo);
-  const aiConfig = useStore(state => state.aiConfig);
+  const memos = useMemoStore(state => state.memos);
+  const addMemo = useMemoStore(state => state.addMemo);
+  const aiConfig = useAiStore(state => state.aiConfig);
   const [query, setQuery] = useState('');
   const [isAISearching, setIsAISearching] = useState(false);
   const [aiAnswer, setAiAnswer] = useState<string | null>(null);

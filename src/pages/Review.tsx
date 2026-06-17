@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shuffle, Sparkles, Loader2, Save, Check } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useMemoStore } from '../store';
+import { useAiStore } from '../store';
 import MemoCard from '../components/MemoCard';
 import { callAI } from '../utils/ai';
 import { Memo } from '../types';
@@ -8,9 +9,9 @@ import { useToast } from '../components/Toast';
 
 const Review: React.FC = () => {
   const { toast } = useToast();
-  const memos = useStore(state => state.memos);
-  const addMemo = useStore(state => state.addMemo);
-  const aiConfig = useStore(state => state.aiConfig);
+  const memos = useMemoStore(state => state.memos);
+  const addMemo = useMemoStore(state => state.addMemo);
+  const aiConfig = useAiStore(state => state.aiConfig);
   const [randomMemos, setRandomMemos] = useState<Memo[]>([]);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Tag as TagIcon, Loader2 } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useMemoStore, useAiStore } from '../store';
 import { extractTagsFromText } from '../utils/tags';
 import { polishTextWithAI, extractTagsWithAI } from '../utils/ai';
 import clsx from 'clsx';
@@ -19,9 +19,9 @@ const MemoInput: React.FC = () => {
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const memos = useStore(state => state.memos);
-  const addMemo = useStore(state => state.addMemo);
-  const aiConfig = useStore(state => state.aiConfig);
+  const memos = useMemoStore(state => state.memos);
+  const addMemo = useMemoStore(state => state.addMemo);
+  const aiConfig = useAiStore(state => state.aiConfig);
 
   const filteredMemos = memos.filter(m => 
     m.content.toLowerCase().includes(refSearchText.toLowerCase())

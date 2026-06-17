@@ -2,16 +2,17 @@ import React, { useMemo } from 'react';
 import { CheckSquare, Square, Trash2, X } from 'lucide-react';
 import MemoInput from '../components/MemoInput';
 import MemoCard from '../components/MemoCard';
-import { useStore } from '../store/useStore';
+import { useMemoStore } from '../store';
+import { useUiStore } from '../store';
 import { useToast } from '../components/Toast';
 
 const Workbench: React.FC = () => {
-  const memos = useStore(state => state.memos);
-  const activeTagFilter = useStore(state => state.activeTagFilter);
-  const selectedMemoIds = useStore(state => state.selectedMemoIds);
-  const clearSelection = useStore(state => state.clearSelection);
-  const selectAllMemos = useStore(state => state.selectAllMemos);
-  const deleteSelectedMemos = useStore(state => state.deleteSelectedMemos);
+  const memos = useMemoStore(state => state.memos);
+  const deleteMemos = useMemoStore(state => state.deleteMemos);
+  const activeTagFilter = useUiStore(state => state.activeTagFilter);
+  const selectedMemoIds = useUiStore(state => state.selectedMemoIds);
+  const clearSelection = useUiStore(state => state.clearSelection);
+  const selectAllMemos = useUiStore(state => state.selectAllMemos);
   const { toast } = useToast();
 
   // Filter memos by active tag
@@ -40,7 +41,7 @@ const Workbench: React.FC = () => {
 
   const handleBatchDelete = async () => {
     if (!window.confirm(`确定要删除选中的 ${selectedCount} 条笔记吗？`)) return;
-    await deleteSelectedMemos();
+    await deleteMemos(Array.from(selectedMemoIds));
     toast(`已删除 ${selectedCount} 条笔记`, 'success');
   };
 
