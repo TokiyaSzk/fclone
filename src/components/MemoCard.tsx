@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { MoreHorizontal, Trash2, Copy, Edit2, Check, X, Link as LinkIcon, Sparkles, Pin } from 'lucide-react';
+import { MoreHorizontal, Trash2, Copy, Edit2, Check, X, Sparkles, Pin } from 'lucide-react';
 import { Memo } from '../types';
 import { useMemoStore, useUiStore } from '../store';
 import { extractTagsFromText } from '../utils/tags';
@@ -62,40 +62,14 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
   };
 
   /**
-   * Render content with markdown support, then overlay tag/link rendering on top.
-   * First pass: renderMarkdown handles **bold**, *italic*, `code`, code blocks, lists, quotes.
-   * Second pass: renderContent overlays #tags and [[links]].
+   * Render content with integrated markdown + tag + link support.
+   * renderMarkdown handles **bold**, *italic*, `code`, code blocks, lists, quotes,
+   * AND #tags / [[links]] in a single pass.
    */
   const renderContent = (text: string): React.ReactNode[] => {
-    // Split text into parts that are tags, links, or markdown-renderable segments
-    const tagLinkRegex = /(#[^\s#]+|\[\[[a-zA-Z0-9-]+\]\])/g;
-    const parts = text.split(tagLinkRegex);
-
-    return parts.map((part, i) => {
-      if (part.startsWith('#')) {
-        return <span key={i} className="text-brand-500 font-medium cursor-pointer hover:underline">{part}</span>;
-      }
-      if (part.startsWith('[[') && part.endsWith(']]')) {
-        const id = part.slice(2, -2);
-        const linkedMemo = memos.find(m => m.id === id);
-        if (linkedMemo) {
-          const preview = linkedMemo.content.slice(0, 15).replace(/\n/g, ' ') + '...';
-          return (
-            <span 
-              key={i} 
-              onClick={() => scrollToMemo(id)}
-              className="inline-flex items-center text-brand-600 bg-brand-50 dark:bg-brand-900/20 px-1.5 py-0.5 rounded text-sm cursor-pointer hover:bg-brand-100 dark:hover:bg-brand-900/30 mx-1 transition-colors"
-            >
-              <LinkIcon className="w-3 h-3 mr-1" />
-              {preview}
-            </span>
-          );
-        }
-        return <span key={i} className="text-gray-400 dark:text-gray-500 line-through mx-1">[已删除引用]</span>;
-      }
-      // Render markdown for non-tag/non-link parts
-      const markdownNodes = renderMarkdown(part);
-      return <React.Fragment key={i}>{markdownNodes}</React.Fragment>;
+    return renderMarkdown(text, {
+      memos,
+      onLinkClick: scrollToMemo,
     });
   };
 

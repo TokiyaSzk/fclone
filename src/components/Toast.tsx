@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, Info, X } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -21,22 +21,16 @@ export const useToast = () => useContext(ToastContext);
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const toast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = crypto.randomUUID();
-    setToasts(prev => [...prev, { id, message, type }]);
-  }, []);
-
   const dismiss = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  // Auto-dismiss after 3s
-  useEffect(() => {
-    if (toasts.length === 0) return;
-    const latest = toasts[toasts.length - 1];
-    const timer = setTimeout(() => dismiss(latest.id), 3000);
-    return () => clearTimeout(timer);
-  }, [toasts, dismiss]);
+  const toast = useCallback((message: string, type: ToastType = 'info') => {
+    const id = crypto.randomUUID();
+    setToasts(prev => [...prev, { id, message, type }]);
+    // 每个 toast 独立调度自己的自动消失定时器
+    setTimeout(() => dismiss(id), 3000);
+  }, [dismiss]);
 
   const icons = {
     success: <CheckCircle className="w-5 h-5 text-green-500" />,
