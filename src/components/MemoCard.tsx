@@ -4,6 +4,7 @@ import { MoreHorizontal, Trash2, Copy, Edit2, Check, X, Link as LinkIcon, Sparkl
 import { Memo } from '../types';
 import { useStore } from '../store/useStore';
 import { extractTagsFromText } from '../utils/tags';
+import { renderMarkdown } from '../utils/markdown';
 import clsx from 'clsx';
 
 interface MemoCardProps {
@@ -19,6 +20,11 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
   const updateMemo = useStore(state => state.updateMemo);
   const deleteMemo = useStore(state => state.deleteMemo);
   const togglePin = useStore(state => state.togglePin);
+  const selectedMemoIds = useStore(state => state.selectedMemoIds);
+  const toggleMemoSelect = useStore(state => state.toggleMemoSelect);
+
+  const isSelected = selectedMemoIds.has(memo.id);
+  const hasSelection = selectedMemoIds.size > 0;
 
   // 发现相关笔记：有共同标签的其他笔记（最多推荐 3 条）
   const relatedMemos = useMemo(() => {
@@ -55,9 +61,16 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
     }
   };
 
-  const renderContent = (text: string) => {
-    // 匹配标签 #tag 和 引用 [[id]]
-    const parts = text.split(/(#[^\s#]+|\[\[[a-zA-Z0-9-]+\]\])/g);
+  /**
+   * Render content with markdown support, then overlay tag/link rendering on top.
+   * First pass: renderMarkdown handles **bold**, *italic*, `code`, code blocks, lists, quotes.
+   * Second pass: renderContent overlays #tags and [[links]].
+   */
+  const renderContent = (text: string): React.ReactNode[] => {
+    // Split text into parts that are tags, links, or markdown-renderable segments
+    const tagLinkRegex = /(#[^\s#]+|\[\[[a-zA-Z0-9-]+\]\])/g;
+    const parts = text.split(tagLinkRegex);
+
     return parts.map((part, i) => {
       if (part.startsWith('#')) {
         return <span key={i} className="text-brand-500 font-medium cursor-pointer hover:underline">{part}</span>;
@@ -80,7 +93,9 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
         }
         return <span key={i} className="text-gray-400 dark:text-gray-500 line-through mx-1">[已删除引用]</span>;
       }
-      return <span key={i}>{part}</span>;
+      // Render markdown for non-tag/non-link parts
+      const markdownNodes = renderMarkdown(part);
+      return <React.Fragment key={i}>{markdownNodes}</React.Fragment>;
     });
   };
 
@@ -89,7 +104,8 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
       id={`memo-${memo.id}`}
       className={clsx(
         "bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 mb-4 group hover:shadow-md transition-all duration-500",
-        memo.pinned && "border-l-2 border-l-brand-500"
+        memo.pinned && "border-l-2 border-l-brand-500",
+        isSelected && "bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-800"
       )}
     >
       {isEditing ? (
@@ -117,8 +133,26 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
         </div>
       ) : (
         <>
-          <div className="text-gray-800 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
-            {renderContent(memo.content)}
+          <div className="flex items-start gap-3">
+            {/* Batch selection checkbox */}
+            {(hasSelection || !isEditing) && (
+              <div className={clsx(
+                "flex-shrink-0 mt-0.5 transition-opacity",
+                hasSelection ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              )}>
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleMemoSelect(memo.id)}
+                  className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500 cursor-pointer"
+                />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="text-gray-800 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
+                {renderContent(memo.content)}
+              </div>
+            </div>
           </div>
           <div className="mt-4 pt-3 border-t border-gray-50 dark:border-gray-800 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 relative">
             <span>{format(memo.createdAt, 'yyyy-MM-dd HH:mm')}</span>

@@ -9,6 +9,7 @@ import Settings from './pages/Settings';
 import Search from './pages/Search';
 import MapPage from './pages/Map';
 import { useStore } from './store/useStore';
+import { ToastProvider } from './components/Toast';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -38,26 +39,28 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-gray-100">Loading...</div>;
   }
 
   if (!session) {
-    return <Auth onLogin={() => {}} />;
+    return <ToastProvider><Auth onLogin={() => {}} /></ToastProvider>;
   }
 
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Workbench />} />
-          <Route path="search" element={<Search />} />
-          <Route path="review" element={<Review />} />
-          <Route path="map" element={<MapPage />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </HashRouter>
+    <ToastProvider>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Workbench />} />
+            <Route path="search" element={<Search />} />
+            <Route path="review" element={<Review />} />
+            <Route path="map" element={<MapPage />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </HashRouter>
+    </ToastProvider>
   );
 }
 

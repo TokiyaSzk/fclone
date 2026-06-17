@@ -3,8 +3,10 @@ import { Settings as SettingsIcon, Save, Key, Globe, Cpu, LogOut, Sun, Moon, Fil
 import { useStore } from '../store/useStore';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '../hooks/useTheme';
+import { useToast } from '../components/Toast';
 
 const Settings: React.FC = () => {
+  const { toast } = useToast();
   const aiConfig = useStore(state => state.aiConfig);
   const updateAIConfig = useStore(state => state.updateAIConfig);
   const isLoadingConfig = useStore(state => state.isLoadingConfig);
@@ -36,6 +38,7 @@ const Settings: React.FC = () => {
     setIsSaving(false);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
+    toast('设置已保存', 'success');
   };
 
   const handleExport = () => {
@@ -49,6 +52,7 @@ const Settings: React.FC = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    toast('导出成功', 'success');
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,8 +63,9 @@ const Settings: React.FC = () => {
       const count = await importMemos(text);
       setImportCount(count);
       setTimeout(() => setImportCount(null), 3000);
+      toast(`成功导入 ${count} 条笔记`, 'success');
     } catch (err: any) {
-      console.error('导入失败:', err.message);
+      toast(err.message || '导入失败', 'error');
     }
     // Reset file input
     if (fileInputRef.current) fileInputRef.current.value = '';

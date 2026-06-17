@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Lock, Mail, Key } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface AuthProps {
   onLogin: () => void;
 }
 
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,6 +31,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         if (error) throw error;
         setMessage('注册成功！请检查您的邮箱进行验证（如果未开启邮箱验证则可直接登录）。');
         setIsSignUp(false);
+        toast('注册成功！请检查邮箱', 'success');
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -39,6 +42,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       }
     } catch (err: any) {
       setError(err.message || '发生错误，请重试');
+      toast(err.message || '发生错误，请重试', 'error');
     } finally {
       setLoading(false);
     }

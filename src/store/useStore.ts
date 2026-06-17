@@ -7,6 +7,8 @@ interface AppState {
   aiConfig: AIConfig;
   isLoadingMemos: boolean;
   isLoadingConfig: boolean;
+  activeTagFilter: string | null;
+  selectedMemoIds: Set<string>;
   addMemo: (content: string, tags: string[]) => Promise<void>;
   updateMemo: (id: string, content: string, tags: string[]) => Promise<void>;
   deleteMemo: (id: string) => Promise<void>;
@@ -16,6 +18,11 @@ interface AppState {
   fetchData: () => Promise<void>;
   exportMemos: () => string;
   importMemos: (json: string) => Promise<number>;
+  setTagFilter: (tag: string | null) => void;
+  toggleMemoSelect: (id: string) => void;
+  selectAllMemos: (ids: string[]) => void;
+  clearSelection: () => void;
+  deleteSelectedMemos: () => Promise<void>;
 }
 
 // ---- localStorage helpers ----
@@ -42,6 +49,8 @@ export const useStore = create<AppState>()(
     memos: [],
     isLoadingMemos: false,
     isLoadingConfig: false,
+    activeTagFilter: null,
+    selectedMemoIds: new Set<string>(),
     aiConfig: {
       baseUrl: 'https://api.openai.com/v1',
       apiKey: '',
@@ -287,6 +296,49 @@ export const useStore = create<AppState>()(
         count++;
       }
       return count;
+    },
+
+    setTagFilter: (tag) => {
+      set({ activeTagFilter: tag, selectedMemoIds: new Set() });
+    },
+
+    toggleMemoSelect: (id) => {
+      set((state) => {
+        const next = new Set(state.selectedMemoIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return { selectedMemoIds: next };
+      });
+    },
+
+    selectAllMemos: (ids) => {
+      set({ selectedMemoIds: new Set(ids) });
+    },
+
+    clearSelection: () => {
+      set({ selectedMemoIds: new Set() });
+    },
+
+    deleteSelectedMemos: async () => {
+      const { selectedMemoIds } = get();
+      if (selectedMemoIds.size === 0) return;
+
+      const previousMemos = get().memos;
+      // 乐观更新
+      set((state) => {
+        const updated = state.memos.filter(m => !selectedMemoIds.has(m.id));
+        saveMemosToLocal(updated);
+        return { memos: updated, selectedMemoIds: new Set() };
+      });
+
+      try {
+        const { error } = await supabase.from('memos').delete().in('id', Array.from(selectedMemoIds));
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error batch deleting memos:', error);
+        set({ memos: previousMemos });
+        saveMemosToLocal(previousMemos);
+      }
     },
   })
 );

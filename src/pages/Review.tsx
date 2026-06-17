@@ -4,8 +4,10 @@ import { useStore } from '../store/useStore';
 import MemoCard from '../components/MemoCard';
 import { callAI } from '../utils/ai';
 import { Memo } from '../types';
+import { useToast } from '../components/Toast';
 
 const Review: React.FC = () => {
+  const { toast } = useToast();
   const memos = useStore(state => state.memos);
   const addMemo = useStore(state => state.addMemo);
   const aiConfig = useStore(state => state.aiConfig);
@@ -26,6 +28,7 @@ const Review: React.FC = () => {
     if (!summary) return;
     addMemo(`${summary}\n\n#AI洞察`, ['AI洞察']);
     setIsSaved(true);
+    toast('已保存为笔记', 'success');
   };
 
   useEffect(() => {
@@ -42,7 +45,7 @@ const Review: React.FC = () => {
       const result = await callAI([{ role: 'user', content: prompt }], aiConfig);
       setSummary(result);
     } catch (err: any) {
-      console.error(err.message || 'AI 总结失败');
+      toast(err.message || 'AI 总结失败', 'error');
     } finally {
       setIsSummarizing(false);
     }

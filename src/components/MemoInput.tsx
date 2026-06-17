@@ -4,8 +4,10 @@ import { useStore } from '../store/useStore';
 import { extractTagsFromText } from '../utils/tags';
 import { polishTextWithAI, extractTagsWithAI } from '../utils/ai';
 import clsx from 'clsx';
+import { useToast } from '../components/Toast';
 
 const MemoInput: React.FC = () => {
+  const { toast } = useToast();
   const [content, setContent] = useState('');
   const [isPolishing, setIsPolishing] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -64,6 +66,7 @@ const MemoInput: React.FC = () => {
     setContent('');
     setError(null);
     setShowRefDropdown(false);
+    toast('笔记已保存', 'success');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -79,8 +82,10 @@ const MemoInput: React.FC = () => {
     try {
       const polished = await polishTextWithAI(content, aiConfig);
       setContent(polished);
+      toast('润色完成', 'success');
     } catch (err: any) {
       setError(err.message || '润色失败');
+      toast(err.message || '润色失败', 'error');
     } finally {
       setIsPolishing(false);
     }
@@ -96,8 +101,10 @@ const MemoInput: React.FC = () => {
         const tagsString = tags.map(t => `#${t}`).join(' ');
         setContent(prev => `${prev}\n\n${tagsString}`);
       }
+      toast('标签已提取', 'success');
     } catch (err: any) {
       setError(err.message || '提取标签失败');
+      toast(err.message || '提取标签失败', 'error');
     } finally {
       setIsExtracting(false);
     }

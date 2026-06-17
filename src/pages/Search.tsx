@@ -3,8 +3,10 @@ import { Search as SearchIcon, Sparkles, Loader2, Save, Check } from 'lucide-rea
 import { useStore } from '../store/useStore';
 import MemoCard from '../components/MemoCard';
 import { callAI } from '../utils/ai';
+import { useToast } from '../components/Toast';
 
 const Search: React.FC = () => {
+  const { toast } = useToast();
   const memos = useStore(state => state.memos);
   const addMemo = useStore(state => state.addMemo);
   const aiConfig = useStore(state => state.aiConfig);
@@ -17,6 +19,7 @@ const Search: React.FC = () => {
     if (!aiAnswer) return;
     addMemo(`**搜索问题：${query}**\n\n${aiAnswer}\n\n#AI问答`, ['AI问答']);
     setIsSaved(true);
+    toast('已保存为笔记', 'success');
   };
 
   // 基础搜索过滤
@@ -43,7 +46,7 @@ const Search: React.FC = () => {
       const result = await callAI([{ role: 'user', content: prompt }], aiConfig);
       setAiAnswer(result);
     } catch (err: any) {
-      console.error(err.message || 'AI 搜索失败');
+      toast(err.message || 'AI 搜索失败', 'error');
     } finally {
       setIsAISearching(false);
     }
