@@ -23,6 +23,7 @@ function loadLocal(): Memo[] | null {
 interface MemoState {
   memos: Memo[];
   isLoading: boolean;
+  connectionStatus: 'connected' | 'disconnected';
 
   fetchData: () => Promise<void>;
   addMemo: (content: string, tags: string[], id?: string) => Promise<void>;
@@ -33,11 +34,23 @@ interface MemoState {
   getAllTags: () => string[];
   exportMemos: () => string;
   importMemos: (json: string) => Promise<number>;
+  syncToSupabase: () => Promise<{ synced: number; failed: number }>;
+  checkConnection: () => Promise<void>;
 }
 
 export const useMemoStore = create<MemoState>()((set, get) => ({
   memos: [],
   isLoading: false,
+  connectionStatus: 'connected',
+
+  checkConnection: async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      set({ connectionStatus: session ? 'connected' : 'disconnected' });
+    } catch {
+      set({ connectionStatus: 'disconnected' });
+    }
+  },
 
   fetchData: async () => {
     set({ isLoading: true });
@@ -48,7 +61,10 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { set({ isLoading: false }); return; }
+      if (!session) {
+        set({ isLoading: false, connectionStatus: 'disconnected' });
+        return;
+      }
 
       const { data, error } = await supabase
         .from('memos')
@@ -60,14 +76,58 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
 
       if (data) {
         const parsed = (data as MemoRow[]).map(rowToMemo);
-        set({ memos: parsed });
+        set({ memos: parsed, connectionStatus: 'connected' });
         saveLocal(parsed);
       }
     } catch (error) {
       console.error('Error fetching memos:', error);
+      set({ connectionStatus: 'disconnected' });
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  syncToSupabase: async () => {
+    const memos = get().memos;
+    if (memos.length === 0) return { synced: 0, failed: 0 };
+
+    let session;
+    try {
+      const result = await supabase.auth.getSession();
+      session = result.data.session;
+    } catch {
+      set({ connectionStatus: 'disconnected' });
+      throw new Error('无法连接到 Supabase，请检查配置。');
+    }
+    if (!session) {
+      set({ connectionStatus: 'disconnected' });
+      throw new Error('未登录，请先登录后再同步。');
+    }
+
+    set({ connectionStatus: 'connected' });
+    let synced = 0;
+    let failed = 0;
+
+    for (const memo of memos) {
+      try {
+        const { error } = await supabase.from('memos').upsert({
+          id: memo.id,
+          content: memo.content,
+          tags: memo.tags,
+          pinned: memo.pinned,
+          user_id: session.user.id,
+          created_at: new Date(memo.createdAt).toISOString(),
+          updated_at: new Date(memo.updatedAt).toISOString(),
+        }, { onConflict: 'id' });
+        if (error) throw error;
+        synced++;
+      } catch (e) {
+        console.error('Sync failed for memo:', memo.id, e);
+        failed++;
+      }
+    }
+
+    return { synced, failed };
   },
 
   addMemo: async (content, tags, _id?: string) => {
@@ -81,17 +141,19 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
       return { memos: updated };
     });
 
-    // 先检查 session – 把可能抛异常的 getSession 放在 try-catch 外面
-    // 如果 Supabase 不可用，静默走本地模式，不触发回滚
+    // 先检查 session – 如果 Supabase 不可用，标记断开但保留本地笔记
     let session;
     try {
       const result = await supabase.auth.getSession();
       session = result.data.session;
     } catch {
-      // Supabase 未配置/不可用 — 本地模式，笔记已保存在 localStorage
+      set({ connectionStatus: 'disconnected' });
       return;
     }
-    if (!session) return;
+    if (!session) {
+      set({ connectionStatus: 'disconnected' });
+      return;
+    }
 
     try {
       const { error } = await supabase.from('memos').insert([{
@@ -101,6 +163,7 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
         updated_at: new Date(now).toISOString(),
       }]);
       if (error) throw error;
+      set({ connectionStatus: 'connected' });
     } catch (error) {
       console.error('Error adding memo:', error);
       set((s) => {

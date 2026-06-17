@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings as SettingsIcon, Save, Key, Globe, Cpu, LogOut, Sun, Moon, FileDown, FileUp } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Key, Globe, Cpu, LogOut, Sun, Moon, FileDown, FileUp, Database, ExternalLink } from 'lucide-react';
 import { useMemoStore } from '../store';
 import { useAiStore } from '../store';
 import { supabase } from '../lib/supabase';
@@ -240,6 +240,68 @@ const Settings: React.FC = () => {
               退出登录
             </button>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">退出登录后需要重新输入账号密码才能访问您的笔记。</p>
+          </div>
+        </div>
+
+        {/* Supabase 配置指引 */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-6">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Database className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              Supabase 云同步配置
+            </h3>
+          </div>
+          <div className="p-6 space-y-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p>当前应用使用 Supabase 作为云端数据库。要开启云同步功能，请在项目根目录创建 <code className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-xs font-mono">.env</code> 文件并填入以下内容：</p>
+
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-xs">
+              <div className="text-gray-400 dark:text-gray-500 mb-1"># .env</div>
+              <div className="text-gray-800 dark:text-gray-200">VITE_SUPABASE_URL=<span className="text-brand-500">https://your-project.supabase.co</span></div>
+              <div className="text-gray-800 dark:text-gray-200">VITE_SUPABASE_ANON_KEY=<span className="text-brand-500">your-anon-key</span></div>
+            </div>
+
+            <ol className="list-decimal list-inside space-y-2">
+              <li>
+                前往{' '}
+                <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-brand-500 hover:underline inline-flex items-center gap-1">
+                  supabase.com <ExternalLink className="w-3 h-3" />
+                </a>
+                {' '}注册并创建一个新项目。
+              </li>
+              <li>在项目 Settings → API 页面中找到 <strong>Project URL</strong>（即 VITE_SUPABASE_URL）和 <strong>anon public key</strong>（即 VITE_SUPABASE_ANON_KEY）。</li>
+              <li>在 Supabase SQL Editor 中运行以下建表语句：</li>
+            </ol>
+
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 font-mono text-xs overflow-x-auto">
+              <pre className="text-gray-800 dark:text-gray-200">{`CREATE TABLE memos (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  content TEXT NOT NULL,
+  tags TEXT[] DEFAULT '{}',
+  pinned BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE user_settings (
+  user_id UUID PRIMARY KEY REFERENCES auth.users,
+  ai_config JSONB DEFAULT '{}',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE memos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own memos"
+  ON memos FOR ALL
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can manage own settings"
+  ON user_settings FOR ALL
+  USING (auth.uid() = user_id);`}</pre>
+            </div>
+
+            <p>配置完成后重启开发服务器，新建的笔记将自动同步到云端。</p>
           </div>
         </div>
       </div>
