@@ -25,7 +25,7 @@ interface MemoState {
   isLoading: boolean;
 
   fetchData: () => Promise<void>;
-  addMemo: (content: string, tags: string[]) => Promise<void>;
+  addMemo: (content: string, tags: string[], id?: string) => Promise<void>;
   updateMemo: (id: string, content: string, tags: string[]) => Promise<void>;
   deleteMemo: (id: string) => Promise<void>;
   deleteMemos: (ids: string[]) => Promise<void>;
@@ -70,8 +70,8 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
     }
   },
 
-  addMemo: async (content, tags) => {
-    const id = crypto.randomUUID();
+  addMemo: async (content, tags, _id?: string) => {
+    const id = _id || crypto.randomUUID();
     const now = Date.now();
     const newMemo: Memo = { id, content, tags, pinned: false, createdAt: now, updatedAt: now };
 
@@ -206,10 +206,11 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
     let count = 0;
     for (const item of data) {
       if (!item.content) continue;
-      await get().addMemo(item.content, item.tags || []);
+      // 保留原始 ID，确保 [[link]] 跨笔记引用不断裂
+      await get().addMemo(item.content, item.tags || [], item.id);
       if (item.pinned) {
-        const latest = get().memos[0];
-        if (latest) await get().togglePin(latest.id);
+        const memo = get().memos.find(m => m.id === item.id);
+        if (memo && !memo.pinned) await get().togglePin(memo.id);
       }
       count++;
     }

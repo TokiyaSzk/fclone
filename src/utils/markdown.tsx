@@ -113,7 +113,7 @@ function renderInline(text: string, options?: MarkdownOptions): React.ReactNode[
   const memos = options?.memos || [];
   const onLinkClick = options?.onLinkClick || (() => {});
   // 统一匹配：**bold**, *italic*, `code`, #tag, [[link]]
-  const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|#[^\s#]+|\[\[[a-zA-Z0-9-]+\]\])/g;
+  const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|#[^\s#,，、]+|\[\[[a-zA-Z0-9-]+\]\])/g;
   const parts = text.split(regex);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {

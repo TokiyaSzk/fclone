@@ -1,6 +1,6 @@
 export const extractTagsFromText = (text: string): string[] => {
-  // 匹配 # 后的非空白字符，直到遇到空格或结尾
-  const tagRegex = /#([^\s#]+)/g;
+  // 匹配 # 后的非空白、非#、非标点分隔符字符
+  const tagRegex = /#([^\s#,，、]+)/g;
   const matches = [...text.matchAll(tagRegex)];
   return Array.from(new Set(matches.map(m => m[1])));
 };
