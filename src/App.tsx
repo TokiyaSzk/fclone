@@ -25,6 +25,10 @@ function App() {
         useMemoStore.getState().fetchData();
         useAiStore.getState().fetchConfig();
       }
+    }).catch((err) => {
+      console.error('Session check failed (Supabase may be unconfigured):', err);
+      setSession(null);
+      setLoading(false);
     });
 
     // 监听 auth 状态变化
