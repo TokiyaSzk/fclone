@@ -2,6 +2,7 @@ export interface Memo {
   id: string;
   content: string;
   tags: string[];
+  pinned: boolean;
   createdAt: number;
   updatedAt: number;
 }

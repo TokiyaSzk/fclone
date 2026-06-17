@@ -104,10 +104,10 @@ const MemoInput: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 transition-shadow focus-within:shadow-md focus-within:border-brand-300 relative">
+    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 mb-6 transition-shadow focus-within:shadow-md focus-within:border-brand-300 dark:focus-within:border-brand-400 relative">
       <textarea
         ref={textareaRef}
-        className="w-full min-h-[120px] resize-none outline-none text-gray-800 placeholder-gray-400 bg-transparent leading-relaxed"
+        className="w-full min-h-[120px] resize-none outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 bg-transparent leading-relaxed"
         placeholder="记录一下现在的想法... (Ctrl+Enter 发送, #标签, [[引用)"
         value={content}
         onChange={handleContentChange}
@@ -116,19 +116,19 @@ const MemoInput: React.FC = () => {
 
       {showRefDropdown && (
         <div 
-          className="absolute z-10 w-64 bg-white border border-gray-200 shadow-xl rounded-lg overflow-hidden"
+          className="absolute z-10 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-lg overflow-hidden"
           style={{ top: dropdownPos.top, left: dropdownPos.left }}
         >
-          <div className="bg-gray-50 px-3 py-1.5 text-xs text-gray-500 font-medium border-b border-gray-100">
+          <div className="bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium border-b border-gray-100 dark:border-gray-700">
             引用笔记
           </div>
           {filteredMemos.length === 0 ? (
-            <div className="px-3 py-4 text-center text-sm text-gray-400">没有找到相关笔记</div>
+            <div className="px-3 py-4 text-center text-sm text-gray-400 dark:text-gray-500">没有找到相关笔记</div>
           ) : (
             filteredMemos.map(m => (
               <div
                 key={m.id}
-                className="px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer truncate transition-colors"
+                className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-brand-900/20 hover:text-brand-700 dark:hover:text-brand-400 cursor-pointer truncate transition-colors"
                 onClick={() => handleSelectRef(m.id)}
               >
                 {m.content.replace(/\n/g, ' ')}
@@ -139,17 +139,17 @@ const MemoInput: React.FC = () => {
       )}
 
       {error && (
-        <div className="text-red-500 text-sm mb-3 px-3 py-2 bg-red-50 rounded-md border border-red-100">
+        <div className="text-red-500 dark:text-red-400 text-sm mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-100 dark:border-red-800">
           {error}
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50 dark:border-gray-800">
         <div className="flex space-x-2">
           <button 
             onClick={handlePolish}
             disabled={isPolishing || !content.trim()}
-            className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-brand-600 dark:hover:text-brand-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="一键润色"
           >
             {isPolishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -159,7 +159,7 @@ const MemoInput: React.FC = () => {
           <button 
             onClick={handleExtractTags}
             disabled={isExtracting || !content.trim()}
-            className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-gray-100 hover:text-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-brand-600 dark:hover:text-brand-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="自动提取标签"
           >
             {isExtracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <TagIcon className="w-4 h-4" />}
@@ -168,7 +168,7 @@ const MemoInput: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <span className="text-xs text-gray-400 hidden sm:inline">
+          <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">
             {content.length} 字
           </span>
           <button
@@ -178,7 +178,7 @@ const MemoInput: React.FC = () => {
               "flex items-center space-x-1 px-4 py-2 rounded-lg font-medium transition-all",
               content.trim() 
                 ? "bg-brand-500 text-white hover:bg-brand-600 shadow-sm" 
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
             )}
           >
             <span>发送</span>

@@ -45,13 +45,13 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
         <div>
-          <div className="mx-auto h-12 w-12 bg-green-100 flex items-center justify-center rounded-full">
-            <Lock className="h-6 w-6 text-green-600" />
+          <div className="mx-auto h-12 w-12 bg-green-100 dark:bg-green-900/30 flex items-center justify-center rounded-full">
+            <Lock className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             {isSignUp ? '创建账号' : '登录 Flomo Clone'}
           </h2>
         </div>
@@ -59,7 +59,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           <div className="rounded-md shadow-sm space-y-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+                <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               </div>
               <input
                 id="email-address"
@@ -69,13 +69,13 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                 placeholder="邮箱地址"
               />
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Key className="h-5 w-5 text-gray-400" />
+                <Key className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               </div>
               <input
                 id="password"
@@ -85,14 +85,14 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                 placeholder="密码（至少6位）"
               />
             </div>
           </div>
 
-          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-          {message && <div className="text-green-500 text-sm text-center">{message}</div>}
+          {error && <div className="text-red-500 dark:text-red-400 text-sm text-center">{error}</div>}
+          {message && <div className="text-green-500 dark:text-green-400 text-sm text-center">{message}</div>}
 
           <div>
             <button
@@ -108,7 +108,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-green-600 hover:text-green-500"
+              className="text-sm text-green-600 dark:text-green-400 hover:text-green-500"
             >
               {isSignUp ? '已有账号？去登录' : '没有账号？去注册'}
             </button>

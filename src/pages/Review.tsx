@@ -42,30 +42,30 @@ const Review: React.FC = () => {
       const result = await callAI([{ role: 'user', content: prompt }], aiConfig);
       setSummary(result);
     } catch (err: any) {
-      alert(err.message || 'AI 总结失败');
+      console.error(err.message || 'AI 总结失败');
     } finally {
       setIsSummarizing(false);
     }
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-surface-subtle">
+    <div className="h-full overflow-y-auto bg-surface-subtle dark:bg-gray-900">
       <div className="max-w-3xl mx-auto px-4 py-6 md:py-10">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
             <Shuffle className="w-6 h-6 mr-2 text-brand-500" />
             每日回顾
           </h1>
           <button 
             onClick={shuffleMemos}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm flex items-center"
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm flex items-center"
           >
             <Shuffle className="w-4 h-4 mr-2" /> 换一批
           </button>
         </div>
 
         {memos.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 bg-white rounded-xl border border-gray-100">
+          <div className="text-center py-20 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
             <p>还没有笔记，去工作台写点什么吧！</p>
           </div>
         ) : (
@@ -74,7 +74,7 @@ const Review: React.FC = () => {
               <button
                 onClick={handleAISummary}
                 disabled={isSummarizing}
-                className="w-full py-3 border-2 border-dashed border-brand-200 rounded-xl text-brand-600 font-medium hover:bg-brand-50 transition-colors flex items-center justify-center disabled:opacity-50"
+                className="w-full py-3 border-2 border-dashed border-brand-200 dark:border-brand-800 rounded-xl text-brand-600 dark:text-brand-400 font-medium hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors flex items-center justify-center disabled:opacity-50"
               >
                 {isSummarizing ? (
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -86,21 +86,21 @@ const Review: React.FC = () => {
             </div>
 
             {summary && (
-              <div className="bg-brand-50 border border-brand-100 rounded-xl p-5 mb-8 relative group">
+              <div className="bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 rounded-xl p-5 mb-8 relative group">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-brand-700 flex items-center">
+                  <h3 className="font-bold text-brand-700 dark:text-brand-300 flex items-center">
                     <Sparkles className="w-4 h-4 mr-1" /> AI 洞察
                   </h3>
                   <button 
                     onClick={handleSaveSummary}
                     disabled={isSaved}
-                    className="flex items-center space-x-1 px-2.5 py-1.5 bg-white/60 hover:bg-white text-brand-600 rounded-md text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
+                    className="flex items-center space-x-1 px-2.5 py-1.5 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800 text-brand-600 dark:text-brand-400 rounded-md text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
                   >
                     {isSaved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
                     <span>{isSaved ? '已保存' : '保存为笔记'}</span>
                   </button>
                 </div>
-                <div className="text-brand-900 leading-relaxed whitespace-pre-wrap text-sm mt-3">
+                <div className="text-brand-900 dark:text-brand-200 leading-relaxed whitespace-pre-wrap text-sm mt-3">
                   {summary}
                 </div>
               </div>

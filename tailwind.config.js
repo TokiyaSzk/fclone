@@ -26,6 +26,9 @@ export default {
           DEFAULT: '#ffffff',
           subtle: '#f4f4f5',
           muted: '#e4e4e7',
+          dark: '#1a1a2e',
+          'dark-subtle': '#16213e',
+          'dark-muted': '#0f3460',
         }
       },
       fontFamily: {

@@ -37,7 +37,7 @@ const MapPage: React.FC = () => {
         id: memo.id,
         name: memo.content.slice(0, 15) + '...',
         val: 1,
-        color: '#f3f4f6', // gray-100
+        color: '#374151', // gray-700 (dark mode friendly)
         type: 'memo'
       });
       
@@ -56,7 +56,7 @@ const MapPage: React.FC = () => {
         id: `tag-${tag}`,
         name: `#${tag}`,
         val: 3,
-        color: '#3b82f6', // brand-500 equivalent
+        color: '#22c55e', // green-500
         type: 'tag'
       });
     });
@@ -65,18 +65,18 @@ const MapPage: React.FC = () => {
   }, [memos]);
 
   return (
-    <div className="h-full flex flex-col bg-surface-subtle">
+    <div className="h-full flex flex-col bg-surface-subtle dark:bg-gray-900">
       <div className="px-4 py-6 md:py-8 max-w-5xl mx-auto w-full">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-2">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center mb-2">
           <MapIcon className="w-6 h-6 mr-2 text-brand-500" />
           认知地图
         </h1>
-        <p className="text-sm text-gray-500 mb-6">可视化你的思维网络。蓝点为标签，灰点为笔记。滚动可缩放，拖拽可移动。</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">可视化你的思维网络。绿点为标签，灰点为笔记。滚动可缩放，拖拽可移动。</p>
       </div>
 
-      <div id="graph-container" className="flex-1 w-full bg-white border-t border-gray-200 overflow-hidden relative">
+      <div id="graph-container" className="flex-1 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 overflow-hidden relative">
         {graphData.nodes.length === 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">
             <p>还没有包含标签的笔记，快去添加吧！</p>
           </div>
         ) : (
@@ -87,7 +87,7 @@ const MapPage: React.FC = () => {
             nodeLabel="name"
             nodeColor="color"
             nodeRelSize={6}
-            linkColor={() => '#e5e7eb'} // gray-200
+            linkColor={() => '#4b5563'} // gray-600 (dark mode friendly)
             linkWidth={1}
             nodeCanvasObject={(node: any, ctx, globalScale) => {
               const label = node.name;
@@ -96,7 +96,7 @@ const MapPage: React.FC = () => {
               const textWidth = ctx.measureText(label).width;
               const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
 
-              ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+              ctx.fillStyle = 'rgba(31, 41, 55, 0.8)'; // gray-800 background for readability
               ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
 
               ctx.textAlign = 'center';
