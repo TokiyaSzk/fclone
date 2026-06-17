@@ -74,10 +74,13 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
 
       if (error) throw error;
 
-      if (data) {
+      if (data !== null && data !== undefined) {
         const parsed = (data as MemoRow[]).map(rowToMemo);
-        set({ memos: parsed, connectionStatus: 'connected' });
-        saveLocal(parsed);
+        // 合并本地仅有但远端不存在的笔记，确保本地新增不丢失
+        const localOnly = local ? local.filter(m => !parsed.some(p => p.id === m.id)) : [];
+        const merged = [...parsed, ...localOnly].sort((a, b) => b.createdAt - a.createdAt);
+        set({ memos: merged, connectionStatus: 'connected' });
+        saveLocal(merged);
       }
     } catch (error) {
       console.error('Error fetching memos:', error);
@@ -165,12 +168,10 @@ export const useMemoStore = create<MemoState>()((set, get) => ({
       if (error) throw error;
       set({ connectionStatus: 'connected' });
     } catch (error) {
-      console.error('Error adding memo:', error);
-      set((s) => {
-        const updated = s.memos.filter(m => m.id !== id);
-        saveLocal(updated);
-        return { memos: updated };
-      });
+      // 云端同步失败 — 笔记保留在本地，不触发回滚
+      // 用户可通过横幅的「同步到云端」按钮稍后重试
+      console.error('Error syncing memo to cloud:', error);
+      set({ connectionStatus: 'disconnected' });
     }
   },
 
