@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { CheckSquare, Square, Trash2, X, CloudOff, RefreshCw, Loader2, Settings as SettingsIcon } from 'lucide-react';
+import { CheckSquare, Square, Trash2, X, CloudOff, RefreshCw, Loader2, Settings as SettingsIcon, Hash, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MemoInput from '../components/MemoInput';
 import MemoCard from '../components/MemoCard';
@@ -154,14 +154,26 @@ const Workbench: React.FC = () => {
 
         <div className="mt-8 space-y-2">
           {filteredMemos.length === 0 ? (
-            <div className="text-center py-20 text-gray-400 dark:text-gray-500">
-              <p>
-                {activeTagFilter
-                  ? `没有带有 #${activeTagFilter} 标签的笔记`
-                  : '还没有记录任何想法，开始你的第一条笔记吧！'
-                }
-              </p>
-            </div>
+            activeTagFilter ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500">
+                <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                  <Hash className="w-7 h-7 text-gray-300 dark:text-gray-600" />
+                </div>
+                <p className="text-lg font-medium text-gray-500 dark:text-gray-400 mb-1">没有 #<span className="text-brand-500">{activeTagFilter}</span> 标签的笔记</p>
+                <p className="text-sm">试试其他标签，或去掉筛选查看全部笔记</p>
+              </div>
+            ) : memos.length > 0 ? null : (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="w-20 h-20 rounded-[28px] bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center mb-6">
+                  <BookOpen className="w-10 h-10 text-brand-300 dark:text-brand-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">开始记录吧</h3>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mb-6 max-w-sm text-center leading-relaxed">
+                  在上方输入框中写下你的想法，使用 <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Ctrl+Enter</kbd> 快速保存。<br />
+                  支持 <span className="text-brand-500">#标签</span> 和 <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">[[引用]]</code> 功能。
+                </p>
+              </div>
+            )
           ) : (
             filteredMemos.map(memo => (
               <MemoCard key={memo.id} memo={memo} />

@@ -3,6 +3,21 @@ import { Map as MapIcon } from 'lucide-react';
 import { useMemoStore } from '../store';
 import ForceGraph2D from 'react-force-graph-2d';
 
+interface GraphNode {
+  id: string;
+  name: string;
+  val: number;
+  color: string;
+  type: 'memo' | 'tag';
+  x?: number;
+  y?: number;
+}
+
+interface GraphLink {
+  source: string;
+  target: string;
+}
+
 const MapPage: React.FC = () => {
   const memos = useMemoStore(state => state.memos);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -24,8 +39,8 @@ const MapPage: React.FC = () => {
   }, []);
 
   const graphData = useMemo(() => {
-    const nodes: any[] = [];
-    const links: any[] = [];
+    const nodes: GraphNode[] = [];
+    const links: GraphLink[] = [];
     
     const tagsSet = new Set<string>();
     
@@ -87,22 +102,25 @@ const MapPage: React.FC = () => {
             nodeLabel="name"
             nodeColor="color"
             nodeRelSize={6}
-            linkColor={() => '#4b5563'} // gray-600 (dark mode friendly)
+            linkColor={() => '#4b5563'}
             linkWidth={1}
-            nodeCanvasObject={(node: any, ctx, globalScale) => {
-              const label = node.name;
-              const fontSize = node.type === 'tag' ? 14/globalScale : 10/globalScale;
+            nodeCanvasObject={(node: unknown, ctx: CanvasRenderingContext2D, globalScale: number) => {
+              const n = node as GraphNode;
+              const label = n.name;
+              const fontSize = n.type === 'tag' ? 14 / globalScale : 10 / globalScale;
               ctx.font = `${fontSize}px Sans-Serif`;
               const textWidth = ctx.measureText(label).width;
-              const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+              const padding = fontSize * 0.2;
+              const bgW = textWidth + padding;
+              const bgH = fontSize + padding;
 
-              ctx.fillStyle = 'rgba(31, 41, 55, 0.8)'; // gray-800 background for readability
-              ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+              ctx.fillStyle = 'rgba(31, 41, 55, 0.8)';
+              ctx.fillRect(n.x! - bgW / 2, n.y! - bgH / 2, bgW, bgH);
 
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.fillStyle = node.color;
-              ctx.fillText(label, node.x, node.y);
+              ctx.fillStyle = n.color;
+              ctx.fillText(label, n.x!, n.y!);
             }}
           />
         )}

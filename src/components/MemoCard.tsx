@@ -76,6 +76,7 @@ const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
   return (
     <div
       id={`memo-${memo.id}`}
+      onDoubleClick={() => { if (!isEditing) { setIsEditing(true); setEditContent(memo.content); } }}
       className={clsx(
         "bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 mb-4 group hover:shadow-md transition-all duration-500",
         memo.pinned && "border-l-2 border-l-brand-500",

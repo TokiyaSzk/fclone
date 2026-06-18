@@ -116,9 +116,15 @@ const Search: React.FC = () => {
         )}
         
         {!query.trim() && !aiAnswer && (
-          <div className="text-center py-20 text-gray-400 dark:text-gray-500">
-            <SearchIcon className="w-12 h-12 mx-auto text-gray-200 dark:text-gray-600 mb-4" />
-            <p>输入关键词进行搜索或向 AI 提问</p>
+          <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500">
+            <div className="w-20 h-20 rounded-[28px] bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-6">
+              <SearchIcon className="w-10 h-10 text-gray-300 dark:text-gray-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-500 dark:text-gray-400 mb-2">搜索你的笔记</h3>
+            <p className="text-sm max-w-sm text-center leading-relaxed">
+              输入关键词搜索笔记内容或标签，或点击「AI 问答」让 AI 根据你的笔记回答问题。<br />
+              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">Ctrl+K</kbd> 全局快捷键随时打开搜索
+            </p>
           </div>
         )}
       </div>
